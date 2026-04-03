@@ -7,7 +7,6 @@
 #include <openssl/err.h>
 #include <netdb.h>
 
-#define CERT_PATH   "/etc/ssl/cert.pem"
 #define TAG         "A%04d"
 #define COMMAND_LOG "======== %s"
 
@@ -17,6 +16,7 @@ int sock;
 SSL_CTX *ctx;
 SSL *ssl;
 
+const char *cert_path;
 const char *host;
 const char *port;
 const char *user;
@@ -37,7 +37,7 @@ void initialize_context() {
 		ERR_print_errors_fp(stderr);
 		exit(EXIT_FAILURE);
 	}
-	if (SSL_CTX_load_verify_locations(ctx, CERT_PATH, NULL) <= 0) {
+	if (SSL_CTX_load_verify_locations(ctx, cert_path, NULL) <= 0) {
 		ERR_print_errors_fp(stderr);
 		exit(EXIT_FAILURE);
 	}
@@ -48,7 +48,7 @@ void initialize_sock(void) {
 	int error = 0;
 
 	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_INET;
+	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	if (getaddrinfo(host, port, &hints, &res) != 0) {
 		perror("getaddrinfo error");
@@ -67,7 +67,7 @@ void initialize_sock(void) {
 		goto cleanup;
 	}
 
-	if (false) {
+	if (0) {
 cleanup:
 		error = 1;
 	}
@@ -120,7 +120,7 @@ int process_idle(void) {
 			}
 
 			cnt++;
-			printf(" %2d. interval: %3d secs\n", cnt, now - last);
+			printf(" %2d. interval: %3ld secs\n", cnt, now - last);
 			last = now;
 
 			if (cnt > 14)
@@ -137,6 +137,10 @@ int process_idle(void) {
 }
 
 int main(void) {
+	if (!(cert_path = getenv("CERT_PATH"))) {
+		fprintf(stderr, "$CERT_PATH is not set\n");
+		return 2;
+	}
 	if (!(host = getenv("HOST"))) {
 		fprintf(stderr, "$HOST is not set\n");
 		return 2;
@@ -197,7 +201,7 @@ int main(void) {
 	if (!process_response(ok, ng))
 		goto cleanup;
 
-	while (true) {
+	while (1) {
 		seq++;
 		len = snprintf(buffer, sizeof(buffer), TAG " IDLE\r\n", seq);
 
@@ -238,7 +242,7 @@ logout:
 	if (!process_response(ok, ng))
 		goto cleanup;
 
-	if (false) {
+	if (0) {
 cleanup:
 		ret = 1;
 	}

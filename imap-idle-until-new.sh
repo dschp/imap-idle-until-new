@@ -1,8 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
 SLEEP_SEC=60
 
-if [ -z "$ACCT" ]; then
+if [ -z "$CERT_PATH" ]; then
+	echo 'Variable $CERT_PATH is not set'
+	exit
+elif [ -z "$ACCT" ]; then
 	echo 'Variable $ACCT is not set'
 	exit
 elif [ -z "$HOST" ]; then
@@ -20,7 +23,7 @@ elif [ -z "$PASS" ]; then
 fi
 
 CONF=$(cat <<EOF
-action "maildir" maildir "%h/data/Maildir"
+action "maildir" maildir "%h/Maildir"
 account "$ACCT" imaps server "$HOST" user "$USER" pass "$PASS"
 match all action "maildir"
 EOF
