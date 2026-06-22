@@ -24,7 +24,7 @@ fi
 
 CONF=$(cat <<EOF
 action "maildir" maildir "%h/Maildir"
-account "$ACCT" imaps server "$HOST" user "$USER" pass "$PASS"
+account "$ACCT" imaps server "$HOST" port "$PORT" user "$USER" pass "$PASS"
 match all action "maildir"
 EOF
 )
